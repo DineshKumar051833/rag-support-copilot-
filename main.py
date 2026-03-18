@@ -10,8 +10,12 @@ app.add_middleware(
     secret_key="super-secret-key"
 )
 
-
 app.include_router(router)
+
+
+@app.get("/")
+def root():
+    return {"message": "RAG Support Copilot is running"}
 
 
 app.add_middleware(
