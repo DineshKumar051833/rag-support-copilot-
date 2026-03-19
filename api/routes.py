@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from rag.rag_pipeline import ask_question
+from rag.rag_pipeline import generate_specs_pipeline
 from api.auth import signup_user, login_user
 from fastapi import Request
 
@@ -12,15 +13,29 @@ class AuthRequest(BaseModel):
     password: str
 
 
-# Request body model
 class QueryRequest(BaseModel):
     query: str
 
 
-# API endpoint
+class RequirementRequest(BaseModel):
+    requirement: str
+
+
+# API endpoints
+
+@router.post("/generate-specs")
+async def generate_specs(request: Request, req: RequirementRequest):
+    # Check session
+    if "user" not in request.session:
+        return {
+            "error": "Unauthorized. Please login first."
+        }
+
+    return generate_specs_pipeline(req.requirement)
+
+
 @router.post("/ask")
 def ask(request: Request, body: QueryRequest):
-
     # Check session
     if "user" not in request.session:
         return {

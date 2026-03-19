@@ -8,3 +8,4 @@ transformers
 torch
 pydantic~=2.12.5
 starlette~=0.52.1
+python-dotenv~=1.2.2

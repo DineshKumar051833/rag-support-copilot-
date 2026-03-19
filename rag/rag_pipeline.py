@@ -7,13 +7,25 @@ from config.Settings import (
 
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+
+llm_base = HuggingFaceEndpoint(
+    repo_id="mistralai/Mistral-7B-Instruct-v0.2",
+    temperature=0.3,
+    max_new_tokens=300,
+    huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_API_TOKEN")
+)
+
+llm = ChatHuggingFace(llm=llm_base)
 
 # LOAD EMBEDDING MODEL
 embeddings = HuggingFaceEmbeddings(
     model_name=EMBEDDING_MODEL
 )
-
 
 # LOAD FAISS VECTOR DATABASE
 vector_db = FAISS.load_local(
@@ -21,6 +33,38 @@ vector_db = FAISS.load_local(
     embeddings,
     allow_dangerous_deserialization=True
 )
+
+
+def generate_specs_pipeline(requirement: str):
+    requirement = requirement[:200]
+
+    prompt = f"""
+Extract key features, user actions, API endpoints, and database tables.
+
+Requirement:
+{requirement}
+
+Give output in this format:
+
+Features:
+- ...
+
+User Stories:
+- As a user, I can ...
+
+API Endpoints:
+- METHOD /path
+
+Database:
+- table_name(columns)
+"""
+
+    response = llm.invoke(prompt).content
+    print(response)
+
+    return {
+        "output": response
+    }
 
 
 # RETRIEVE DOCUMENTS
@@ -42,10 +86,27 @@ def build_context(docs):
 
 
 # EXTRACT ANSWER
-def generate_answer(context: str):
-    if "?" in context:
-        return context.split("?", 1)[1].strip()
-    return context.strip()
+def generate_answer(query: str, context: str):
+    prompt = f"""
+You are an AI assistant.
+
+Answer the user's question ONLY using the given context.
+
+If the answer is not in the context, say:
+"I don't know based on the provided context."
+
+Context:
+{context}
+
+Question:
+{query}
+
+Answer:
+"""
+
+    response = llm.invoke(prompt).content
+
+    return response.strip()
 
 
 # MAIN RAG PIPELINE
@@ -64,11 +125,10 @@ def ask_question(query: str):
 
     context = build_context(results)
 
-    answer = generate_answer(context)
+    answer = generate_answer(context,query)
 
     return {
         "query": query,
         "answer": answer,
         "retrieved_documents": results
     }
-
