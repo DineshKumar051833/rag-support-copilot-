@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const BASE_URL = "https://dinesh-05-rag-support-copilot.hf.space";
-
+    
 export default function App() {
   // ---------------- AUTH ----------------
   const [username, setUsername] = useState("");
