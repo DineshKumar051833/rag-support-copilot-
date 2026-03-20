@@ -13,16 +13,6 @@ import os
 
 load_dotenv()
 
-llm_base = HuggingFaceEndpoint(
-    repo_id="mistralai/Mistral-7B-Instruct-v0.2",
-    temperature=0.3,
-    max_new_tokens=100,
-    huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_API_TOKEN"),
-    timeout=20
-)
-
-llm = ChatHuggingFace(llm=llm_base)
-
 # LOAD EMBEDDING MODEL
 embeddings = HuggingFaceEmbeddings(
     model_name=EMBEDDING_MODEL
@@ -36,7 +26,20 @@ vector_db = FAISS.load_local(
 )
 
 
+def get_llm():
+    llm_base = HuggingFaceEndpoint(
+        repo_id="mistralai/Mistral-7B-Instruct-v0.2",
+        temperature=0.3,
+        max_new_tokens=80,  # 🔥 reduce slightly
+        huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_API_TOKEN"),
+        timeout=30
+    )
+
+    return ChatHuggingFace(llm=llm_base)
+
+
 def generate_specs_pipeline(requirement: str):
+    llm = get_llm()
     requirement = requirement[:200]
 
     prompt = f"""
@@ -88,6 +91,7 @@ def build_context(docs):
 
 # EXTRACT ANSWER
 def generate_answer(query: str, context: str):
+    llm = get_llm()
     prompt = f"""
 You are an AI assistant.
 
@@ -126,7 +130,7 @@ def ask_question(query: str):
 
     context = build_context(results)
 
-    answer = generate_answer(context,query)
+    answer = generate_answer(query, context)
 
     return {
         "query": query,
