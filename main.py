@@ -8,8 +8,8 @@ app = FastAPI()
 app.add_middleware(
     SessionMiddleware,
     secret_key="super-secret-key",
-    same_site="none",
-    https_only=True
+    same_site="lax",
+    https_only=False
 )
 
 app.include_router(router)
@@ -22,7 +22,7 @@ def root():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://10.249.231.52:3000", "https://rag-support-copilot.vercel.app/"],
+    allow_origins=["http://localhost:3000", "http://localhost:3000", "https://rag-support-copilot.vercel.app/"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

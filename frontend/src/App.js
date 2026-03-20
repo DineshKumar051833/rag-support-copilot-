@@ -106,6 +106,7 @@ export default function App() {
       const res = await fetch(`${BASE_URL}/generate-specs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ requirement })
       });
 

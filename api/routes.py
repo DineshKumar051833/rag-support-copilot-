@@ -64,6 +64,7 @@ def login(request: Request, body: AuthRequest):
     if success:
         request.session["user"] = body.username  # store session
 
+    print("Login Works")
     return {
         "success": success,
         "message": message
