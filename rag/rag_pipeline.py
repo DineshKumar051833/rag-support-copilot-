@@ -9,6 +9,8 @@ from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
 from dotenv import load_dotenv
 import os
 
+load_dotenv()
+
 vector_db = None
 
 
@@ -38,7 +40,7 @@ def get_llm():
         temperature=0.3,
         max_new_tokens=80,
         huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_API_TOKEN"),
-        timeout=30
+        timeout=10
     )
 
     return ChatHuggingFace(llm=llm_base)
@@ -69,12 +71,15 @@ Database:
 - table_name(columns)
 """
 
-    response = llm.invoke(prompt).content
-    print(response)
+    try:
+        response = llm.invoke(prompt).content
+        return {"output": response}
 
-    return {
-        "output": response
-    }
+    except Exception as e:
+        print("SPEC ERROR:", e)
+        return {
+            "output": "Server busy, please try again in few seconds"
+        }
 
 
 # RETRIEVE DOCUMENTS
@@ -116,9 +121,13 @@ Question:
 Answer:
 """
 
-    response = llm.invoke(prompt).content
+    try:
+        response = llm.invoke(prompt).content
+        return response.strip()
 
-    return response.strip()
+    except Exception as e:
+        print("ANSWER ERROR:", e)
+        return "Server busy, please try again"
 
 
 # MAIN RAG PIPELINE
@@ -127,7 +136,7 @@ def ask_question(query: str):
 
     best_score = results[0]["score"]
 
-    # 🔒 Hallucination blocking
+    # Hallucination blocking
     if best_score > SIMILARITY_THRESHOLD:
         return {
             "query": query,
