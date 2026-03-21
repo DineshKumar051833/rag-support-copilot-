@@ -5,25 +5,31 @@ from config.Settings import (
     TOP_K
 )
 
-from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
+vector_db = None
 
-# LOAD EMBEDDING MODEL
-embeddings = HuggingFaceEmbeddings(
-    model_name=EMBEDDING_MODEL
-)
 
-# LOAD FAISS VECTOR DATABASE
-vector_db = FAISS.load_local(
-    FAISS_INDEX_PATH,
-    embeddings,
-    allow_dangerous_deserialization=True
-)
+def load_vector_db():
+    global vector_db
+
+    if vector_db is None:
+        from langchain_community.vectorstores import FAISS
+        from langchain_huggingface import HuggingFaceEmbeddings
+
+        embeddings = HuggingFaceEmbeddings(
+            model_name=EMBEDDING_MODEL
+        )
+
+        vector_db = FAISS.load_local(
+            FAISS_INDEX_PATH,
+            embeddings,
+            allow_dangerous_deserialization=True
+        )
+
+    return vector_db
 
 
 def get_llm():
@@ -73,7 +79,8 @@ Database:
 
 # RETRIEVE DOCUMENTS
 def retrieve_documents(query: str):
-    results = vector_db.similarity_search_with_score(query, k=TOP_K)
+    db = load_vector_db()
+    results = db.similarity_search_with_score(query, k=TOP_K)
 
     return [
         {
