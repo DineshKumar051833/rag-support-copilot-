@@ -1,29 +1,21 @@
 from fastapi import FastAPI
 from api.routes import router
-from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 app = FastAPI()
 
 app.add_middleware(
     SessionMiddleware,
     secret_key="super-secret-key",
-    same_site="lax",
-    https_only=False
 )
 
 app.include_router(router)
 
+app.mount("/static", StaticFiles(directory="build/static"), name="static")
+
 
 @app.get("/")
-def root():
-    return {"message": "RAG Support Copilot is running"}
-
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3000", "https://rag-support-copilot.vercel.app/"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+def serve():
+    return FileResponse("build/index.html")

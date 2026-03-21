@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const BASE_URL = "https://dinesh-05-rag-support-copilot.hf.space";
+const BASE_URL = "";
     
 export default function App() {
   // ---------------- AUTH ----------------
