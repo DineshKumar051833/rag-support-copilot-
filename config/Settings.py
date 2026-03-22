@@ -8,4 +8,4 @@ FAISS_INDEX_PATH = "faiss_index"
 SIMILARITY_THRESHOLD = 0.6
 
 # Retrieval
-TOP_K = 3
+TOP_K = 1

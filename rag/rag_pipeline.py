@@ -38,7 +38,7 @@ def get_llm():
     llm_base = HuggingFaceEndpoint(
         repo_id="mistralai/Mistral-7B-Instruct-v0.2",
         temperature=0.3,
-        max_new_tokens=80,
+        max_new_tokens=40,
         huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_API_TOKEN"),
         timeout=10
     )
